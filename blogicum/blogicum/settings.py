@@ -115,3 +115,10 @@ src_paths = '/django_sprint4'
 LOGIN_REDIRECT_URL = 'blog:index'
 
 LOGIN_URL = 'login'
+
+MEDIA_ROOT = BASE_DIR / 'media/'
+
+MEDIA_URL = '/media/'
+
+CSRF_FAILURE_VIEW = 'pages.views.csrf_failure'
+

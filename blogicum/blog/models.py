@@ -3,6 +3,7 @@ from django.db import models
 
 from .constants import MAX_LENGTH_FIELD
 from .managers import PostQuerySet, PublishedPostManager
+from django.urls import reverse
 
 User = get_user_model()
 
@@ -94,6 +95,13 @@ class Post(BaseBlogModel):
         verbose_name_plural = 'Публикации'
         ordering = ('-pub_date', )
 
+    def get_absolute_url(self):
+        return reverse('blog:post_detail', args=(self.pk,))
+    
+    def comment_count(self):
+        return self.comments.count()
+
+    
     def __str__(self):
         return self.title
     
@@ -119,4 +127,5 @@ class Comment(BaseBlogModel):
         verbose_name_plural = 'Комментарии'
         ordering = ('created_at', )
 
-
+    def __str__(self):
+        return self.text
