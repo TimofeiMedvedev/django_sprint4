@@ -95,8 +95,10 @@ class Post(BaseBlogModel):
         verbose_name_plural = 'Публикации'
         ordering = ('-pub_date', )
 
-    def get_absolute_url(self):
-        return reverse('blog:post_detail', args=(self.pk,))
+    # def get_absolute_url(self):
+    #     return reverse('blog:profile', args=[self.author])
+    # def get_absolute_url(self):
+    #     return reverse('blog:post_detail', args=(self.pk,))
     
     def comment_count(self):
         return self.comments.count()
