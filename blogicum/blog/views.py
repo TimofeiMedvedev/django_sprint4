@@ -1,23 +1,22 @@
 """Импорт функции render и Http404."""
 from typing import Any, Dict
-from django.contrib.auth import get_user_model
-from django.db.models.query import QuerySet
-from django.http.response import HttpResponse
-from django.shortcuts import get_object_or_404, render, redirect
+
+from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import update_session_auth_hash
-from .constants import POSTS_FOR_PAGINATOR
-from .models import Category, Post, Comment
-from .forms import PasswordChangeForm, PostForm, CommentForm
-from django.views.generic import (
-    CreateView, DeleteView, ListView, UpdateView, DetailView
-)
-from django.http import HttpResponseForbidden
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Count
+from django.db.models.query import QuerySet
+from django.http import Http404, HttpResponseForbidden
+from django.http.response import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
-from django.http import Http404
-from django.db.models import Count
+from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
+                                  UpdateView)
+
+from .constants import POSTS_FOR_PAGINATOR
+from .forms import CommentForm, PasswordChangeForm, PostForm
+from .models import Category, Comment, Post
 
 User = get_user_model()
 
