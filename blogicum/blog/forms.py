@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+
 class PostForm(forms.ModelForm):
 
     class Meta:
@@ -14,6 +15,7 @@ class PostForm(forms.ModelForm):
                 format='%Y-%m-%dT%H:%M', attrs={'type': 'datetime-local'}
             )
         }
+
 
 class UserForm(forms.ModelForm):
     class Meta:
@@ -36,7 +38,6 @@ class PasswordChangeForm(forms.Form):
         if password1 and password2 and password1 != password2:
             raise forms.ValidationError("Passwords don't match")
 
-        
 
 class CommentForm(forms.ModelForm):
 
@@ -46,4 +47,3 @@ class CommentForm(forms.ModelForm):
         widgets = {
             'text': forms.Textarea(attrs={'rows': '10', 'cols': '20'}),
         }
-

@@ -7,19 +7,17 @@ app_name = 'blog'
 
 urlpatterns = [
     path('', views.PostListView.as_view(), name='index'),
-    # path('profile/<username>/', views.profile, name='profile'),
-    # path('profile/<username>/', views.UserListView.as_view(), name='profile'),
-    path('profile/<username>/', views.UserProfileListView.as_view(), name='profile'),
-   
+    path(
+        'profile/<username>/',
+        views.UserProfileListView.as_view(),
+        name='profile'),
     path(
         'profile/',
         views.UserUpdateView.as_view(),
         name='edit_profile',
     ),
-    # path('posts/<int:post_id>/', views.post_detail, name='post_detail'),
     path('category/<slug:category_slug>/', views.CategoryPostView.as_view(),
          name='category_posts'),
-    # path('posts/create/', views.post_create, name='create_post'),
     path('posts/create/', views.PostsCreateView.as_view(), name='create_post'),
     path(
         'posts/<int:post_id>/edit/',
