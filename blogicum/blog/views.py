@@ -1,4 +1,3 @@
-"""Импорт функции render и Http404."""
 from typing import Any, Dict
 
 from django.contrib.auth import get_user_model, update_session_auth_hash
@@ -20,13 +19,24 @@ from .models import Category, Comment, Post
 
 User = get_user_model()
 
+class DirectionMixin(LoginRequiredMixin):
+    def dispatch(self, request, *args, **kwargs) -> HttpResponse:
+        if self.get_object().author != request.user:
+            return redirect(
+                'blog:post_detail',
+                post_id=self.kwargs[self.pk_url_kwarg]
+            )
+        return super().dispatch(request, *args, **kwargs)
 
-class UserProfileListView(ListView):
+
+class UserProfileListView(ListView): 
+
     template_name = 'blog/profile.html'
     paginate_by = POSTS_FOR_PAGINATOR
 
     def get_queryset(self) -> QuerySet[Any]:
-        self.author = get_object_or_404(
+        self.q = Post.objects.annotate(Count('comments'))
+        self.author = get_object_or_404( 
             User,
             username=self.kwargs['username']
         )
@@ -34,15 +44,13 @@ class UserProfileListView(ListView):
             'author',
             'location',
             'category',
-        ).filter(
+        ).filter( 
             author=self.author
-        ).annotate(
-            comment_count=Count('comments')
-        ).order_by('-pub_date')
-
+        ).order_by('-pub_date')     
     def get_context_data(self, **kwargs) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context['profile'] = self.author
+        context['comment_count'] = self.q
         return context
 
 
@@ -55,12 +63,12 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
         'last_name',
         'email',
     )
-
-    def get_success_url(self):
-        return reverse(
-            'blog:profile',
-            kwargs={'username': self.request.user}
-        )
+ 
+    def get_success_url(self): 
+        return reverse( 
+            'blog:profile', 
+            kwargs={'username': self.request.user.username}
+        ) 
 
     def get_object(self, queryset=None):
         return self.request.user
@@ -93,24 +101,16 @@ class PostsCreateView(LoginRequiredMixin, CreateView):
     def get_success_url(self):
         return reverse(
             'blog:profile',
-            kwargs={'username': self.request.user}
+            kwargs={'username': self.request.user.username}
         )
 
 
-class EditPostView(LoginRequiredMixin, UpdateView):
+class EditPostView(DirectionMixin, UpdateView):
 
     model = Post
     pk_url_kwarg = 'post_id'
     form_class = PostForm
     template_name = 'blog/create.html'
-
-    def dispatch(self, request, *args, **kwargs) -> HttpResponse:
-        if self.get_object().author != request.user:
-            return redirect(
-                'blog:post_detail',
-                post_id=self.kwargs['post_id']
-            )
-        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         form.instance.author = self.request.user
@@ -124,23 +124,16 @@ class EditPostView(LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         return reverse(
             'blog:post_detail',
-            kwargs={'post_id': self.kwargs['post_id']}
+            kwargs={self.pk_url_kwarg: self.kwargs[self.pk_url_kwarg]}
         )
 
 
-class DeletePostView(LoginRequiredMixin, DeleteView):
+class DeletePostView(DirectionMixin, DeleteView):
 
     model = Post
     pk_url_kwarg = 'post_id'
     template_name = 'blog/create.html'
 
-    def dispatch(self, request, *args, **kwargs) -> HttpResponse:
-        if self.get_object().author != request.user:
-            return redirect(
-                'blog:post_detail',
-                post_id=self.kwargs['post_id']
-            )
-        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse(
@@ -159,15 +152,8 @@ class PostListView(ListView):
     paginate_by = POSTS_FOR_PAGINATOR
 
     def get_queryset(self) -> QuerySet[Any]:
-        return Post.objects.select_related(
-            'author',
-            'location',
-            'category',
-        ).filter(
-            pub_date__lte=timezone.now(),
-            is_published=True,
-            category__is_published=True,
-        ).annotate(
+        
+        return Post.published.annotate(
             comment_count=Count('comments')
         ).order_by('-pub_date')
 
@@ -177,26 +163,17 @@ class CategoryPostView(ListView):
     paginate_by = POSTS_FOR_PAGINATOR
 
     def get_queryset(self) -> QuerySet[Any]:
-        return Post.objects.select_related(
-            'author',
-            'location',
-            'category',
-        ).filter(
-            pub_date__lte=timezone.now(),
-            is_published=True,
-            category__is_published=True,
-            category__slug=self.kwargs['category_slug'],
-        ).annotate(
-            comment_count=Count('comments')
-        ).order_by('-pub_date')
+        self.q = Post.objects.annotate(Count('comments'))
+        self.category = get_object_or_404(
+            Category, is_published=True,
+            slug=self.kwargs['category_slug'],
+        )
+        return self.category.posts(manager='published').order_by('-pub_date')
 
     def get_context_data(self, **kwargs) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context['category'] = get_object_or_404(
-            Category,
-            is_published=True,
-            slug=self.kwargs['category_slug'],
-        )
+        context['category'] = self.category
+        context['comment_count'] = self.q
         return context
 
 

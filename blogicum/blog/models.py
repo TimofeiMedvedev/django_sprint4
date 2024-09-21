@@ -8,11 +8,7 @@ User = get_user_model()
 
 
 class BaseBlogModel(models.Model):
-    is_published = models.BooleanField(
-        'Опубликовано',
-        default=True,
-        help_text='Снимите галочку, чтобы скрыть публикацию.'
-    )
+
     created_at = models.DateTimeField(
         'Добавлено',
         auto_now_add=True,
@@ -22,11 +18,22 @@ class BaseBlogModel(models.Model):
         abstract = True
         ordering = ('created_at', )
 
+class BaseBlogModel2(BaseBlogModel):
+    is_published = models.BooleanField(
+        'Опубликовано',
+        default=True,
+        help_text='Снимите галочку, чтобы скрыть публикацию.'
+    )
 
-class Location(BaseBlogModel):
+    class Meta:
+        abstract = True
+        
+
+
+class Location(BaseBlogModel2):
     name = models.CharField('Название места', max_length=MAX_LENGTH_FIELD)
 
-    class Meta(BaseBlogModel.Meta):
+    class Meta:
         verbose_name = 'местоположение'
         verbose_name_plural = 'Местоположения'
 
@@ -34,7 +41,7 @@ class Location(BaseBlogModel):
         return self.name
 
 
-class Category(BaseBlogModel):
+class Category(BaseBlogModel2):
     title = models.CharField('Заголовок', max_length=MAX_LENGTH_FIELD)
     description = models.TextField('Описание')
     slug = models.SlugField(
@@ -45,7 +52,7 @@ class Category(BaseBlogModel):
         unique=True,
     )
 
-    class Meta(BaseBlogModel.Meta):
+    class Meta:
         verbose_name = 'категория'
         verbose_name_plural = 'Категории'
 
@@ -53,7 +60,7 @@ class Category(BaseBlogModel):
         return self.title
 
 
-class Post(BaseBlogModel):
+class Post(BaseBlogModel2):
     title = models.CharField('Заголовок', max_length=MAX_LENGTH_FIELD)
     text = models.TextField('Текст')
     pub_date = models.DateTimeField(
@@ -88,7 +95,7 @@ class Post(BaseBlogModel):
     objects = PostQuerySet.as_manager()
     published = PublishedPostManager()
 
-    class Meta(BaseBlogModel.Meta):
+    class Meta:
         default_related_name = 'posts'
         verbose_name = 'публикация'
         verbose_name_plural = 'Публикации'
@@ -116,7 +123,12 @@ class Comment(BaseBlogModel):
 
     text = models.TextField(verbose_name='Текст комментария')
 
-    class Meta(BaseBlogModel.Meta):
+    created_at = models.DateTimeField(
+        'Добавлено',
+        auto_now_add=True,
+    )
+
+    class Meta:
         default_related_name = 'comments'
         verbose_name = 'комментарий'
         verbose_name_plural = 'Комментарии'

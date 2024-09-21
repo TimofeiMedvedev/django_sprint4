@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.db import models
 
-from .models import Category, Location, Post
+from .models import Category, Location, Post, Comment
 
 
 class UserAdminCustom(UserAdmin):
@@ -57,3 +57,10 @@ class PostAdmin(admin.ModelAdmin):
     list_filter = ('created_at',)
     empty_value_display = ('-пусто-')
     list_display_links = ('title',)
+
+# @admin.register(Comment)
+# class CommentAdmin(admin.ModelAdmin):
+#     list_display = ('text')
+
+
+admin.site.register(Comment)
