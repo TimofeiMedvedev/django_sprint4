@@ -16,7 +16,6 @@ from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
 from .constants import POSTS_FOR_PAGINATOR
 from .forms import CommentForm, PasswordChangeForm, PostForm
 from .models import Category, Comment, Post
-from django.contrib.auth.mixins import UserPassesTestMixin
 
 User = get_user_model()
 
