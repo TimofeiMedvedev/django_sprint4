@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 
 from .constants import MAX_LENGTH_FIELD
-from .managers import PostQuerySet, PublishedPostManager, PublishedPostManager2
+from .managers import PostQuerySet, PublishedPostManager
 
 User = get_user_model()
 
@@ -94,16 +94,13 @@ class Post(BaseBlogModel2):
 
     objects = PostQuerySet.as_manager()
     published = PublishedPostManager()
-    published2 = PublishedPostManager2()
+  
 
     class Meta:
         default_related_name = 'posts'
         verbose_name = 'публикация'
         verbose_name_plural = 'Публикации'
         ordering = ('-pub_date', )
-
-    def comment_count(self):
-        return self.comments.count()
 
     def __str__(self):
         return self.title

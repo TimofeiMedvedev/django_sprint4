@@ -35,22 +35,32 @@ class UserProfileListView(ListView):
 
     template_name = 'blog/profile.html'
     paginate_by = POSTS_FOR_PAGINATOR
+    
+   
 
     def get_queryset(self) -> QuerySet[Any]:
-        self.q = Post.objects.annotate(Count('comments'))
+      
         self.author = get_object_or_404(
             User,
             username=self.kwargs['username']
         )
-        return self.author.posts(manager='published2').order_by('-pub_date')
+
+        if self.author != self.request.user:
+            return self.author.posts(manager='published').order_by('-pub_date')
+        else:
+            return self.author.posts.with_comment_count().order_by('-pub_date')
+
+        # if self.author != self.request.user:
+        #     return self.author.posts(manager='published')
+        # else:
+        #     return self.author.posts.with_comment_count().order_by('-pub_date')
+        
 
     def get_context_data(self, **kwargs) -> Dict[str, Any]:
-        context = dict(
-            **super().get_context_data(**kwargs),
-            profile=self.author,
-            comment_count=self.q,
-        )
+        context = super().get_context_data(**kwargs)
+        context['profile'] = self.author
         return context
+
 
 
 class UserUpdateView(LoginRequiredMixin, UpdateView):
@@ -150,9 +160,7 @@ class PostListView(ListView):
     paginate_by = POSTS_FOR_PAGINATOR
 
     def get_queryset(self) -> QuerySet[Any]:
-        return Post.published.annotate(
-            comment_count=Count('comments')
-        ).order_by('-pub_date')
+        return Post.published.order_by('-pub_date')
 
 
 class CategoryPostView(ListView):
@@ -160,7 +168,6 @@ class CategoryPostView(ListView):
     paginate_by = POSTS_FOR_PAGINATOR
 
     def get_queryset(self) -> QuerySet[Any]:
-        self.q = Post.objects.annotate(Count('comments'))
         self.category = get_object_or_404(
             Category, is_published=True,
             slug=self.kwargs['category_slug'],
@@ -170,7 +177,6 @@ class CategoryPostView(ListView):
     def get_context_data(self, **kwargs) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context['category'] = self.category
-        context['comment_count'] = self.q
         return context
 
 
