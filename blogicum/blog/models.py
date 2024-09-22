@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 
 from .constants import MAX_LENGTH_FIELD
-from .managers import PostQuerySet, PublishedPostManager
+from .managers import PostQuerySet, PublishedPostManager, PublishedPostManager2
 
 User = get_user_model()
 
@@ -18,6 +18,7 @@ class BaseBlogModel(models.Model):
         abstract = True
         ordering = ('created_at', )
 
+
 class BaseBlogModel2(BaseBlogModel):
     is_published = models.BooleanField(
         'Опубликовано',
@@ -27,7 +28,6 @@ class BaseBlogModel2(BaseBlogModel):
 
     class Meta:
         abstract = True
-        
 
 
 class Location(BaseBlogModel2):
@@ -94,6 +94,7 @@ class Post(BaseBlogModel2):
 
     objects = PostQuerySet.as_manager()
     published = PublishedPostManager()
+    published2 = PublishedPostManager2()
 
     class Meta:
         default_related_name = 'posts'

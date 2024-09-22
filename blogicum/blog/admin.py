@@ -58,9 +58,5 @@ class PostAdmin(admin.ModelAdmin):
     empty_value_display = ('-пусто-')
     list_display_links = ('title',)
 
-# @admin.register(Comment)
-# class CommentAdmin(admin.ModelAdmin):
-#     list_display = ('text')
-
 
 admin.site.register(Comment)

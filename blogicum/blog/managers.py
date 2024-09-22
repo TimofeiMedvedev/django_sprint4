@@ -25,3 +25,11 @@ class PublishedPostManager(models.Manager):
             .with_related_data()
             .published()
         )
+
+
+class PublishedPostManager2(models.Manager):
+    def get_queryset(self) -> PostQuerySet:
+        return (
+            PostQuerySet(self.model)
+            .with_related_data()
+        )

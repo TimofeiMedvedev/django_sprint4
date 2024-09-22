@@ -16,10 +16,13 @@ from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
 from .constants import POSTS_FOR_PAGINATOR
 from .forms import CommentForm, PasswordChangeForm, PostForm
 from .models import Category, Comment, Post
+from django.contrib.auth.mixins import UserPassesTestMixin
 
 User = get_user_model()
 
+
 class DirectionMixin(LoginRequiredMixin):
+
     def dispatch(self, request, *args, **kwargs) -> HttpResponse:
         if self.get_object().author != request.user:
             return redirect(
@@ -29,28 +32,25 @@ class DirectionMixin(LoginRequiredMixin):
         return super().dispatch(request, *args, **kwargs)
 
 
-class UserProfileListView(ListView): 
+class UserProfileListView(ListView):
 
     template_name = 'blog/profile.html'
     paginate_by = POSTS_FOR_PAGINATOR
 
     def get_queryset(self) -> QuerySet[Any]:
         self.q = Post.objects.annotate(Count('comments'))
-        self.author = get_object_or_404( 
+        self.author = get_object_or_404(
             User,
             username=self.kwargs['username']
         )
-        return Post.objects.select_related(
-            'author',
-            'location',
-            'category',
-        ).filter( 
-            author=self.author
-        ).order_by('-pub_date')     
+        return self.author.posts(manager='published2').order_by('-pub_date')
+
     def get_context_data(self, **kwargs) -> Dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context['profile'] = self.author
-        context['comment_count'] = self.q
+        context = dict(
+            **super().get_context_data(**kwargs),
+            profile=self.author,
+            comment_count=self.q,
+        )
         return context
 
 
@@ -63,12 +63,12 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
         'last_name',
         'email',
     )
- 
-    def get_success_url(self): 
-        return reverse( 
-            'blog:profile', 
+
+    def get_success_url(self):
+        return reverse(
+            'blog:profile',
             kwargs={'username': self.request.user.username}
-        ) 
+        )
 
     def get_object(self, queryset=None):
         return self.request.user
@@ -134,7 +134,6 @@ class DeletePostView(DirectionMixin, DeleteView):
     pk_url_kwarg = 'post_id'
     template_name = 'blog/create.html'
 
-
     def get_success_url(self):
         return reverse(
             'blog:profile',
@@ -152,7 +151,6 @@ class PostListView(ListView):
     paginate_by = POSTS_FOR_PAGINATOR
 
     def get_queryset(self) -> QuerySet[Any]:
-        
         return Post.published.annotate(
             comment_count=Count('comments')
         ).order_by('-pub_date')
