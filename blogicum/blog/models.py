@@ -7,7 +7,7 @@ from .managers import PostQuerySet, PublishedPostManager
 User = get_user_model()
 
 
-class BaseBlogModel(models.Model):
+class BaseCreated(models.Model):
 
     created_at = models.DateTimeField(
         'Добавлено',
@@ -19,7 +19,7 @@ class BaseBlogModel(models.Model):
         ordering = ('created_at', )
 
 
-class BaseBlogModel2(BaseBlogModel):
+class BasePublished(BaseCreated):
     is_published = models.BooleanField(
         'Опубликовано',
         default=True,
@@ -30,7 +30,7 @@ class BaseBlogModel2(BaseBlogModel):
         abstract = True
 
 
-class Location(BaseBlogModel2):
+class Location(BasePublished):
     name = models.CharField('Название места', max_length=MAX_LENGTH_FIELD)
 
     class Meta:
@@ -41,7 +41,7 @@ class Location(BaseBlogModel2):
         return self.name
 
 
-class Category(BaseBlogModel2):
+class Category(BasePublished):
     title = models.CharField('Заголовок', max_length=MAX_LENGTH_FIELD)
     description = models.TextField('Описание')
     slug = models.SlugField(
@@ -60,7 +60,7 @@ class Category(BaseBlogModel2):
         return self.title
 
 
-class Post(BaseBlogModel2):
+class Post(BasePublished):
     title = models.CharField('Заголовок', max_length=MAX_LENGTH_FIELD)
     text = models.TextField('Текст')
     pub_date = models.DateTimeField(
@@ -94,7 +94,6 @@ class Post(BaseBlogModel2):
 
     objects = PostQuerySet.as_manager()
     published = PublishedPostManager()
-  
 
     class Meta:
         default_related_name = 'posts'
@@ -106,7 +105,7 @@ class Post(BaseBlogModel2):
         return self.title
 
 
-class Comment(BaseBlogModel):
+class Comment(BaseCreated):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

@@ -17,13 +17,12 @@ class PostQuerySet(models.QuerySet):
             pub_date__lt=now(),
             category__is_published=True
         )
-    
+
     def with_comment_count(self):
         return self.annotate(
             comment_count=Count('comments')
         )
-    
-    
+
 
 class PublishedPostManager(models.Manager):
     def get_queryset(self) -> PostQuerySet:
@@ -33,5 +32,3 @@ class PublishedPostManager(models.Manager):
             .published()
             .with_comment_count()
         )
-
-

@@ -3,7 +3,6 @@ from typing import Any, Dict
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count
 from django.db.models.query import QuerySet
 from django.http import Http404, HttpResponseForbidden
 from django.http.response import HttpResponse
@@ -35,11 +34,9 @@ class UserProfileListView(ListView):
 
     template_name = 'blog/profile.html'
     paginate_by = POSTS_FOR_PAGINATOR
-    
-   
 
     def get_queryset(self) -> QuerySet[Any]:
-      
+
         self.author = get_object_or_404(
             User,
             username=self.kwargs['username']
@@ -50,17 +47,10 @@ class UserProfileListView(ListView):
         else:
             return self.author.posts.with_comment_count().order_by('-pub_date')
 
-        # if self.author != self.request.user:
-        #     return self.author.posts(manager='published')
-        # else:
-        #     return self.author.posts.with_comment_count().order_by('-pub_date')
-        
-
     def get_context_data(self, **kwargs) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context['profile'] = self.author
         return context
-
 
 
 class UserUpdateView(LoginRequiredMixin, UpdateView):
