@@ -23,7 +23,7 @@
 
 Клонировать репозиторий:
 ```
-git clone <https or SSH URL>
+git clone git@github.com:TimofeiMedvedev/django_sprint4.git
 ```
 
 Перейти в папку проекта:
